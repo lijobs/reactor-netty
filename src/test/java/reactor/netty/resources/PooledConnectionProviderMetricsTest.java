@@ -73,7 +73,7 @@ public class PooledConnectionProviderMetricsTest {
 
 		HttpClient.create(fixed)
 		          .port(server.port())
-		          .doOnResponse((res, conn) -> {
+		          .tcpConfiguration(tcpClient -> tcpClient.doOnConnected(conn -> {
 		              conn.channel()
 		                  .closeFuture()
 		                  .addListener(f -> latch.countDown());
@@ -83,11 +83,12 @@ public class PooledConnectionProviderMetricsTest {
 		              double idleConnections = getGaugeValue(NAME + IDLE_CONNECTIONS);
 		              double pendingConnections = getGaugeValue(NAME + PENDING_CONNECTIONS);
 
+		              System.out.println(totalConnections + " " + activeConnections + " " + idleConnections + " " + pendingConnections + " ");
 		              if (totalConnections == 1 && activeConnections == 1 &&
 		                      idleConnections == 0 && pendingConnections == 0) {
 		                  metrics.set(true);
 		              }
-		          })
+		          }))
 		          .metrics(true)
 		          .get()
 		          .uri("/")

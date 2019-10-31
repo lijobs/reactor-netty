@@ -9,12 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest]
         transport: [native, nio]
-        exclude:
-          # excludes native on Windows (there's none)
-          - os: windows-latest
-            transport: native
 
     steps:
     - uses: actions/checkout@v1
@@ -26,3 +22,9 @@ jobs:
 # IF WE NEED TO TEST DIFFERENT VERSIONS OF NETTY, WE CAN ADD forceNettyVersion TO THE MATRIX
 #      run: ./gradlew check -PforceTransport=${{ matrix.transport }} -PforceNettyVersion=${{ matrix.netty }}
       run: ./gradlew clean check -PforceTransport=${{ matrix.transport }}
+    - name: Archive tests output
+      if: failure()
+      uses: actions/upload-artifact@v1
+      with:
+        name: tests_output_${{ matrix.os }}_${{ matrix.transport }}
+        path: build/test-results/test/binary/output.bin
